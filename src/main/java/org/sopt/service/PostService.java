@@ -1,5 +1,6 @@
 package org.sopt.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.sopt.domain.Post;
 import org.sopt.dto.request.CreatePostRequest;
@@ -32,23 +33,52 @@ public class PostService {
 
     // READ - 전체 📝 과제
     public List<PostResponse> getAllPosts() {
-        // TODO
-        return null;
+        List<Post> posts = postRepository.findAll();
+        List<PostResponse> responses = new ArrayList<>();
+
+        for (Post post : posts) {
+            responses.add(new PostResponse(post));
+        }
+
+        return responses;
     }
 
     // READ - 단건 📝 과제
     public PostResponse getPost(Long id) {
-        // TODO
-        return null;
+        Post post = postRepository.findById(id);
+        if (post == null) {
+            throw new IllegalArgumentException("게시글이 없습니다.");
+        }
+
+        return new PostResponse(post);
     }
 
     // UPDATE 📝 과제
     public void updatePost(Long id, String newTitle, String newContent) {
-        // TODO
+        Post post = postRepository.findById(id);
+
+        if (post == null) {
+            throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+        }
+
+        if (newTitle == null || newTitle.isBlank()) {
+            throw new IllegalArgumentException("제목은 필수입니다!");
+        }
+        if (newContent == null || newContent.isBlank()) {
+            throw new IllegalArgumentException("내용은 필수입니다!");
+        }
+
+        post.update(newTitle, newContent);
     }
 
     // DELETE 📝 과제
     public void deletePost(Long id) {
-        // TODO
+        Post post = postRepository.findById(id);
+
+        if (post == null) {
+            throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+        }
+
+        postRepository.deleteById(id);
     }
 }

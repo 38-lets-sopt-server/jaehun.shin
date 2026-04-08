@@ -31,4 +31,5 @@ public class PostRepository {
     public Long generateId() {
         return nextId++;
     }
+
 }
