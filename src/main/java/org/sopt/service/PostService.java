@@ -8,18 +8,17 @@ import org.sopt.dto.response.CreatePostResponse;
 import org.sopt.dto.response.PostResponse;
 import org.sopt.exception.PostNotFoundException;
 import org.sopt.repository.PostRepository;
+import org.sopt.validator.PostValidator;
 
 public class PostService {
     private final PostRepository postRepository = new PostRepository();
-
+    private final PostValidator postValidator = new PostValidator();
     // CREATE
     public CreatePostResponse createPost(CreatePostRequest request) {
-        if (request.getTitle() == null || request.getTitle().isBlank()) {
-            throw new IllegalArgumentException("제목은 필수입니다!");
-        }
-        if (request.getContent() == null || request.getContent().isBlank()) {
-            throw new IllegalArgumentException("내용은 필수입니다!");
-        }
+
+        postValidator.validateTitle(request.getTitle());
+        postValidator.validateContent(request.getContent());
+
         String createdAt = java.time.LocalDateTime.now().toString();
         Post post = new Post(
                 postRepository.generateId(),
@@ -62,12 +61,8 @@ public class PostService {
             throw new PostNotFoundException(id);
         }
 
-        if (newTitle == null || newTitle.isBlank()) {
-            throw new IllegalArgumentException("제목은 필수입니다!");
-        }
-        if (newContent == null || newContent.isBlank()) {
-            throw new IllegalArgumentException("내용은 필수입니다!");
-        }
+        postValidator.validateTitle(newTitle);
+        postValidator.validateContent(newContent);
 
         post.update(newTitle, newContent);
     }
