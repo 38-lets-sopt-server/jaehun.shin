@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.sopt.domain.Post;
 import org.sopt.dto.request.CreatePostRequest;
+import org.sopt.dto.request.UpdatePostRequest;
 import org.sopt.dto.response.CreatePostResponse;
 import org.sopt.dto.response.PostResponse;
 import org.sopt.exception.PostNotFoundException;
@@ -16,8 +17,7 @@ public class PostService {
     // CREATE
     public CreatePostResponse createPost(CreatePostRequest request) {
 
-        postValidator.validateTitle(request.getTitle());
-        postValidator.validateContent(request.getContent());
+        postValidator.validateCreate(request);
 
         String createdAt = java.time.LocalDateTime.now().toString();
         Post post = new Post(
@@ -54,17 +54,15 @@ public class PostService {
     }
 
     // UPDATE 📝 과제
-    public void updatePost(Long id, String newTitle, String newContent) {
+    public void updatePost(Long id, UpdatePostRequest request) {
         Post post = postRepository.findById(id);
 
         if (post == null) {
             throw new PostNotFoundException(id);
         }
 
-        postValidator.validateTitle(newTitle);
-        postValidator.validateContent(newContent);
-
-        post.update(newTitle, newContent);
+        postValidator.validateUpdate(request);
+        post.update(request.getTitle(), request.getContent());
     }
 
     // DELETE 📝 과제

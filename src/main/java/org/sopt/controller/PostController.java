@@ -2,6 +2,7 @@ package org.sopt.controller;
 
 import java.util.List;
 import org.sopt.dto.request.CreatePostRequest;
+import org.sopt.dto.request.UpdatePostRequest;
 import org.sopt.dto.response.CreatePostResponse;
 import org.sopt.dto.response.PostResponse;
 import org.sopt.exception.PostNotFoundException;
@@ -35,9 +36,9 @@ public class PostController {
     }
 
     // PUT /posts/{id} 📝 과제
-    public void updatePost(Long id, String newTitle, String newContent) {
+    public void updatePost(Long id, UpdatePostRequest request) {
         try {
-            postService.updatePost(id, newTitle, newContent);
+            postService.updatePost(id, request);
         } catch (PostNotFoundException | IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Scanner;
 import org.sopt.controller.PostController;
 import org.sopt.dto.request.CreatePostRequest;
+import org.sopt.dto.request.UpdatePostRequest;
 import org.sopt.dto.response.CreatePostResponse;
 import org.sopt.dto.response.PostResponse;
 
@@ -68,7 +69,12 @@ public class Main {
                     String newTitle = scanner.nextLine();
                     System.out.print("새 내용: ");
                     String newContent = scanner.nextLine();
-                    postController.updatePost(updateId, newTitle, newContent);
+//                    postController.updatePost(updateId, newTitle, newContent);
+                    postController.updatePost(
+                            updateId,
+                            new UpdatePostRequest(newTitle, newContent)
+                    );
+
                     break;
 
                 case 5:
