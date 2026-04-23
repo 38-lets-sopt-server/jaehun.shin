@@ -10,10 +10,17 @@ import org.sopt.dto.response.PostResponse;
 import org.sopt.exception.PostNotFoundException;
 import org.sopt.repository.PostRepository;
 import org.sopt.validator.PostValidator;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PostService {
-    private final PostRepository postRepository = new PostRepository();
+    private final PostRepository postRepository;
     private final PostValidator postValidator = new PostValidator();
+
+    public PostService(PostRepository postRepository) {
+        this.postRepository = postRepository;
+    }
+
     // CREATE
     public CreatePostResponse createPost(CreatePostRequest request) {
 
@@ -45,21 +52,16 @@ public class PostService {
 
     // READ - 단건 📝 과제
     public PostResponse getPost(Long id) {
-        Post post = postRepository.findById(id);
-        if (post == null) {
-            throw new PostNotFoundException(id);
-        }
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException(id));
 
         return new PostResponse(post);
     }
 
     // UPDATE 📝 과제
     public void updatePost(Long id, UpdatePostRequest request) {
-        Post post = postRepository.findById(id);
-
-        if (post == null) {
-            throw new PostNotFoundException(id);
-        }
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException(id));
 
         postValidator.validateUpdate(request);
         post.update(request.getTitle(), request.getContent());
@@ -67,11 +69,8 @@ public class PostService {
 
     // DELETE 📝 과제
     public void deletePost(Long id) {
-        Post post = postRepository.findById(id);
-
-        if (post == null) {
-            throw new PostNotFoundException(id);
-        }
+        postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException(id));
 
         postRepository.deleteById(id);
     }
