@@ -2,11 +2,8 @@ package org.sopt.repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.sopt.domain.Post;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public class PostRepository {
     private final List<Post> postList = new ArrayList<>();
     private Long nextId = 1L;
@@ -20,10 +17,11 @@ public class PostRepository {
         return postList;
     }
 
-    public Optional<Post> findById(Long id) {
+    public Post findById(Long id) {
         return postList.stream()
                 .filter(p -> p.getId().equals(id))
-                .findFirst();
+                .findFirst()
+                .orElse(null);
     }
 
     public boolean deleteById(Long id) {

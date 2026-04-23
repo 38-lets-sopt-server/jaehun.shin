@@ -3,69 +3,95 @@ package org.sopt.controller;
 import java.util.List;
 import org.sopt.dto.request.CreatePostRequest;
 import org.sopt.dto.request.UpdatePostRequest;
-import org.sopt.dto.response.ApiResponse;
+import org.sopt.dto.response.CommonResponse;
 import org.sopt.dto.response.CreatePostResponse;
 import org.sopt.dto.response.PostResponse;
 import org.sopt.exception.PostNotFoundException;
 import org.sopt.service.PostService;
-import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("/posts")
 public class PostController {
+    private final PostService postService = new PostService();
 
-    private final PostService postService;
+    // POST /posts
+//    public CreatePostResponse createPost(CreatePostRequest request) {
+//        try {
+//            return postService.createPost(request);
+//        } catch (IllegalArgumentException e) {
+//            return new CreatePostResponse(null, "🚫 " + e.getMessage());
+//        }
+//    }
 
-    public PostController(PostService postService) {
-        this.postService = postService;
-    }
-
-    @PostMapping
-    public ApiResponse<CreatePostResponse> createPost(@RequestBody CreatePostRequest request) {
+    public CommonResponse<CreatePostResponse> createPost(CreatePostRequest request) {
         try {
             CreatePostResponse response = postService.createPost(request);
-            return ApiResponse.success("게시글 등록 완료", response);
+            return CommonResponse.success("게시글 등록 완료", response);
         } catch (IllegalArgumentException e) {
-            return ApiResponse.fail(e.getMessage());
+            return CommonResponse.fail(e.getMessage());
         }
     }
 
-    @GetMapping
-    public ApiResponse<List<PostResponse>> getAllPosts() {
+    // GET /posts 📝 과제
+//    public List<PostResponse> getAllPosts() {
+//        return postService.getAllPosts();
+//    }
+
+    public CommonResponse<List<PostResponse>> getAllPosts() {
         List<PostResponse> posts = postService.getAllPosts();
-        return ApiResponse.success("게시글 전체 목록 조회 성공", posts);
+        return CommonResponse.success("게시글 전체 목록 조회 성공", posts);
     }
 
-    @GetMapping("/{id}")
-    public ApiResponse<PostResponse> getPost(@PathVariable Long id) {
+    // GET /posts/{id} 📝 과제
+//    public PostResponse getPost(Long id) {
+//        try {
+//            return postService.getPost(id);
+//        } catch (PostNotFoundException | IllegalArgumentException e) {
+//            System.out.println(e.getMessage());
+//            return null;
+//        }
+//    }
+
+    public CommonResponse<PostResponse> getPost(Long id) {
         try {
             PostResponse post = postService.getPost(id);
-            return ApiResponse.success("게시글 조회 성공", post);
+            return CommonResponse.success("게시글 조회 성공", post);
         } catch (PostNotFoundException | IllegalArgumentException e) {
-            return ApiResponse.fail(e.getMessage());
+            return CommonResponse.fail(e.getMessage());
         }
     }
 
-    @PutMapping("/{id}")
-    public ApiResponse<Void> updatePost(
-            @PathVariable Long id,
-            @RequestBody UpdatePostRequest request
-    ) {
+    // PUT /posts/{id} 📝 과제
+//    public void updatePost(Long id, UpdatePostRequest request) {
+//        try {
+//            postService.updatePost(id, request);
+//        } catch (PostNotFoundException | IllegalArgumentException e) {
+//            System.out.println(e.getMessage());
+//        }
+//    }
+
+    public CommonResponse<Void> updatePost(Long id, UpdatePostRequest request) {
         try {
             postService.updatePost(id, request);
-            return ApiResponse.success("게시글 수정 완료", null);
+            return CommonResponse.success("게시글 수정 완료", null);
         } catch (PostNotFoundException | IllegalArgumentException e) {
-            return ApiResponse.fail(e.getMessage());
+            return CommonResponse.fail(e.getMessage());
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> deletePost(@PathVariable Long id) {
+    // DELETE /posts/{id} 📝 과제
+//    public void deletePost(Long id) {
+//        try {
+//            postService.deletePost(id);
+//        } catch (PostNotFoundException e) {
+//            System.out.println(e.getMessage());
+//        }
+//    }
+
+    public CommonResponse<Void> deletePost(Long id) {
         try {
             postService.deletePost(id);
-            return ApiResponse.success("게시글 삭제완료", null);
+            return CommonResponse.success("게시글 삭제완료", null);
         } catch (PostNotFoundException e) {
-            return ApiResponse.fail(e.getMessage());
+            return CommonResponse.fail(e.getMessage());
         }
     }
 }
