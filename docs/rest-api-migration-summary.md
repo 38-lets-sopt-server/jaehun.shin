@@ -250,7 +250,124 @@ NoClassDefFoundError: org/springframework/web/servlet/resource/LiteWebJarsResour
 - 최종 반영: `2.5.0`
 - 목적: 현재 Spring Boot 3.2.4와의 호환성 확보
 
-## 7. 최종 정리
+## 7. 키워드 정리
+
+### 1) REST API 구조 전환
+
+기존에는 콘솔 입력을 받아 메서드를 직접 호출하는 구조였다.  
+이번 브랜치에서는 HTTP 요청을 받아 JSON 응답을 반환하는 REST API 구조로 전환했다.  
+즉, 사용자는 콘솔 메뉴를 선택하는 대신 `POST /posts`, `GET /posts/{id}` 같은 엔드포인트를 호출하게 된다.
+
+### 2) `@SpringBootApplication`
+
+`Main.java`에 적용한 애플리케이션 시작 어노테이션이다.  
+Spring Boot 애플리케이션의 진입점 역할을 하며, 컴포넌트 스캔과 자동 설정의 시작점이 된다.
+
+```java
+@SpringBootApplication
+public class Main {
+    public static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
+    }
+}
+```
+
+### 3) `@RestController`
+
+컨트롤러 클래스가 REST API 응답을 처리한다는 의미의 어노테이션이다.  
+기존처럼 콘솔 출력을 하는 것이 아니라, 메서드 반환값이 그대로 HTTP 응답 본문(JSON)으로 내려가도록 만든다.
+
+### 4) `@RequestBody`
+
+클라이언트가 보낸 JSON 요청 본문을 Java 객체로 바인딩할 때 사용한다.  
+예를 들어 `POST /posts` 요청에서 아래 JSON:
+
+```json
+{
+  "title": "첫 게시글",
+  "content": "내용입니다.",
+  "author": "jaehunshin"
+}
+```
+
+는 `CreatePostRequest` 객체로 변환된다.
+
+### 5) `@PathVariable`
+
+URL 경로에 포함된 값을 메서드 파라미터로 받을 때 사용한다.  
+예를 들어 `GET /posts/1` 요청에서 `1`은 `@PathVariable Long id`로 전달된다.
+
+### 6) `@Service`
+
+비즈니스 로직을 담당하는 클래스에 붙이는 어노테이션이다.  
+이번 브랜치에서는 게시글 생성, 조회, 수정, 삭제 흐름과 검증 로직이 `PostService`에 모이도록 정리했다.
+
+### 7) `@Repository`
+
+데이터 저장소 역할을 하는 클래스에 붙이는 어노테이션이다.  
+이번 구현에서는 실제 DB 대신 메모리 기반 `List<Post>`를 사용하지만, 역할은 저장소 계층으로 분리했다.
+
+### 8) `Optional`
+
+`findById()`처럼 값이 있을 수도 없을 수도 있는 결과를 표현하기 위해 사용했다.  
+기존 `null` 반환 방식보다 “조회 결과가 비어 있을 수 있음”을 더 명확하게 드러낼 수 있다.
+
+```java
+public Optional<Post> findById(Long id) {
+    return postList.stream()
+            .filter(p -> p.getId().equals(id))
+            .findFirst();
+}
+```
+
+그리고 `Service`에서는 아래처럼 사용한다.
+
+```java
+Post post = postRepository.findById(id)
+        .orElseThrow(() -> new PostNotFoundException(id));
+```
+
+### 9) `ApiResponse`
+
+모든 API 응답을 공통 형식으로 감싸기 위해 사용한 DTO이다.  
+응답 구조를 `success`, `message`, `data`로 통일해, 성공 응답과 실패 응답을 일관되게 표현할 수 있도록 했다.
+
+예시:
+
+```json
+{
+  "success": true,
+  "message": "게시글 조회 성공",
+  "data": {
+    "id": 1,
+    "title": "t",
+    "content": "c",
+    "author": "a",
+    "createdAt": "2026-04-23T23:30:37.653419"
+  }
+}
+```
+
+### 10) Swagger UI / OpenAPI
+
+브라우저에서 API 명세를 확인하기 위해 Swagger UI를 추가했다.  
+이를 위해 `build.gradle`에 `springdoc-openapi` 의존성을 추가했고, 실행 후 아래 경로에서 확인할 수 있다.
+
+- `/swagger-ui.html`
+- `/v3/api-docs`
+
+또한 Spring Boot 3.2.4와 호환되도록 `springdoc-openapi-starter-webmvc-ui` 버전을 `2.5.0`으로 조정했다.
+
+### 11) Postman CRUD 테스트
+
+Postman으로 게시글 생성, 전체 조회, 단건 조회, 수정, 삭제 흐름을 직접 확인했다.  
+이 과정에서 아래와 같은 요청 규칙도 함께 점검했다.
+
+- `POST`, `PUT` 요청은 `Body -> raw -> JSON`
+- `GET`, `DELETE` 요청은 body 없이 전송
+- `baseUrl`은 끝에 `/` 없이 두고 `{{baseUrl}}/posts` 형식으로 사용
+
+## 8. 최종 정리
 
 이번 브랜치에서는 게시글 프로그램을 콘솔 앱에서 Spring Boot REST API 구조로 전환했다.  
 그 과정에서 `Controller - Service - Repository` 계층을 Spring Bean 구조로 정리했고, `ApiResponse` 기반 공통 응답 포맷을 적용했으며, Postman으로 CRUD 동작을 확인했다.
