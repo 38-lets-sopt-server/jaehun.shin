@@ -19,10 +19,6 @@ public class PostValidator {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("제목은 필수입니다.");
         }
-
-        if (title.length() > 50) {
-            throw new IllegalArgumentException("제목은 50자 이내로 작성해주세요.");
-        }
     }
 
     public void validateContent(String content) {
