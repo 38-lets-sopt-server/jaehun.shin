@@ -22,12 +22,8 @@ public class PostController {
 
     @PostMapping
     public ApiResponse<CreatePostResponse> createPost(@RequestBody CreatePostRequest request) {
-        try {
-            CreatePostResponse response = postService.createPost(request);
-            return ApiResponse.success("게시글 등록 완료", response);
-        } catch (IllegalArgumentException e) {
-            return ApiResponse.fail(e.getMessage());
-        }
+        CreatePostResponse response = postService.createPost(request);
+        return ApiResponse.success("게시글 등록 완료", response);
     }
 
     @GetMapping
@@ -38,12 +34,8 @@ public class PostController {
 
     @GetMapping("/{id}")
     public ApiResponse<PostResponse> getPost(@PathVariable Long id) {
-        try {
-            PostResponse post = postService.getPost(id);
-            return ApiResponse.success("게시글 조회 성공", post);
-        } catch (PostNotFoundException | IllegalArgumentException e) {
-            return ApiResponse.fail(e.getMessage());
-        }
+        PostResponse post = postService.getPost(id);
+        return ApiResponse.success("게시글 조회 성공", post);
     }
 
     @PutMapping("/{id}")
@@ -51,21 +43,13 @@ public class PostController {
             @PathVariable Long id,
             @RequestBody UpdatePostRequest request
     ) {
-        try {
-            postService.updatePost(id, request);
-            return ApiResponse.success("게시글 수정 완료", null);
-        } catch (PostNotFoundException | IllegalArgumentException e) {
-            return ApiResponse.fail(e.getMessage());
-        }
+        postService.updatePost(id, request);
+        return ApiResponse.success("게시글 수정 성공", null);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deletePost(@PathVariable Long id) {
-        try {
-            postService.deletePost(id);
-            return ApiResponse.success("게시글 삭제완료", null);
-        } catch (PostNotFoundException e) {
-            return ApiResponse.fail(e.getMessage());
-        }
+        postService.deletePost(id);
+        return ApiResponse.success("게시글 삭제완료", null);
     }
 }
