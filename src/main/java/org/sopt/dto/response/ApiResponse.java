@@ -29,9 +29,12 @@ public class ApiResponse<T> {
         return message;
     }
 
+    public String getCode() {
+        return code;
+    }
+
     public T getData() {
         return data;
     }
 
 }
-
