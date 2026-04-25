@@ -1,12 +1,9 @@
 package org.sopt.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
-public class Post {
+public class Post extends BaseTimeEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,11 +12,16 @@ public class Post {
 
     private String content;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     protected Post(){}
 
-    public Post(String title, String content) {
+    public Post(String title, String content, User user) {
         this.title = title;
         this.content = content;
+        this.user = user;
     }
 
     public Long getId() {
@@ -34,8 +36,14 @@ public class Post {
         return content;
     }
 
+    public User getUser() {
+        return user;
+    }
+
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
     }
+
+
 }
