@@ -1,18 +1,25 @@
 package org.sopt.domain;
 
-public class Post {
-    private final Long id;
-    private String title;
-    private String content;
-    private final String author;
-    private final String createdAt;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
-    public Post(Long id, String title, String content, String author, String createdAt) {
-        this.id = id;
+@Entity
+public class Post {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+
+    private String content;
+
+    protected Post(){}
+
+    public Post(String title, String content) {
         this.title = title;
         this.content = content;
-        this.author = author;
-        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -25,14 +32,6 @@ public class Post {
 
     public String getContent() {
         return content;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
     }
 
     public void update(String title, String content) {
