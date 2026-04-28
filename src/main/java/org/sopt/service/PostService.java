@@ -64,7 +64,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostResponse getPost(Long id) {
         Post post = postRepository.findById(id)
-                .orElseThrow(PostNotFoundException::new);
+                .orElseThrow(() -> new PostNotFoundException(id));
 
         return new PostResponse(post);
     }
@@ -73,7 +73,7 @@ public class PostService {
     @Transactional
     public void updatePost(Long id, UpdatePostRequest request) {
         Post post = postRepository.findById(id)
-                .orElseThrow(PostNotFoundException::new);
+                .orElseThrow(() -> new PostNotFoundException(id));
 
         postValidator.validateUpdate(request);
         post.update(request.getTitle(), request.getContent());
@@ -83,7 +83,7 @@ public class PostService {
     @Transactional
     public void deletePost(Long id) {
         postRepository.findById(id)
-                .orElseThrow(PostNotFoundException::new);
+                .orElseThrow(() -> new PostNotFoundException(id));
 
         postRepository.deleteById(id);
     }

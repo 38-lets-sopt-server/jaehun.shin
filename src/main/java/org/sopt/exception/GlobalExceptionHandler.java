@@ -20,6 +20,12 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(errorCode, errorCode.getMessage());
     }
 
+    @ExceptionHandler(PostValidationException.class)
+    public ResponseEntity<ApiResponse<Void>> handlePostValidation(PostValidationException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return buildErrorResponse(errorCode, errorCode.getMessage());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException e) {
         ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
