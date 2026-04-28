@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 
 public enum ErrorCode {
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST_001", "게시글을 찾을 수 없습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_001", "사용자를 찾을 수 없습니다."),
     POST_TITLE_REQUIRED(HttpStatus.BAD_REQUEST, "POST_002", "제목은 필수입니다."),
     POST_TITLE_TOO_LONG(HttpStatus.BAD_REQUEST, "POST_003", "제목은 50자 이내로 작성해주세요."),
     POST_CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "POST_004", "내용은 필수입니다."),

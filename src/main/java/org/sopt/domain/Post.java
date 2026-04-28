@@ -1,18 +1,27 @@
 package org.sopt.domain;
 
-public class Post {
-    private final Long id;
-    private String title;
-    private String content;
-    private final String author;
-    private final String createdAt;
+import jakarta.persistence.*;
 
-    public Post(Long id, String title, String content, String author, String createdAt) {
-        this.id = id;
+@Entity
+public class Post extends BaseTimeEntity{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+
+    private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    protected Post(){}
+
+    public Post(String title, String content, User user) {
         this.title = title;
         this.content = content;
-        this.author = author;
-        this.createdAt = createdAt;
+        this.user = user;
     }
 
     public Long getId() {
@@ -27,16 +36,14 @@ public class Post {
         return content;
     }
 
-    public String getAuthor() {
-        return author;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
+    public User getUser() {
+        return user;
     }
 
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
     }
+
+
 }

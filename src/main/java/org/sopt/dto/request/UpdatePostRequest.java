@@ -3,7 +3,6 @@ package org.sopt.dto.request;
 public class UpdatePostRequest {
     private String title;
     private String content;
-    private String author;
 
     public UpdatePostRequest() {
     }
@@ -21,7 +20,4 @@ public class UpdatePostRequest {
         return content;
     }
 
-    public String getAuthor() {
-        return author;
-    }
 }
