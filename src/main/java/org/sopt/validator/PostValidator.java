@@ -2,6 +2,8 @@ package org.sopt.validator;
 
 import org.sopt.dto.request.CreatePostRequest;
 import org.sopt.dto.request.UpdatePostRequest;
+import org.sopt.exception.ErrorCode;
+import org.sopt.exception.PostValidationException;
 
 public class PostValidator {
 
@@ -17,17 +19,17 @@ public class PostValidator {
 
     public void validateTitle(String title) {
         if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("제목은 필수입니다.");
+            throw new PostValidationException(ErrorCode.POST_TITLE_REQUIRED);
         }
 
         if (title.length() > 50) {
-            throw new IllegalArgumentException("제목은 50자 이내로 작성해주세요.");
+            throw new PostValidationException(ErrorCode.POST_TITLE_TOO_LONG);
         }
     }
 
     public void validateContent(String content) {
         if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("내용은 필수입니다.");
+            throw new PostValidationException(ErrorCode.POST_CONTENT_REQUIRED);
         }
     }
 }
