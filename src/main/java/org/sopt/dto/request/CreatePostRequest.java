@@ -3,15 +3,15 @@ package org.sopt.dto.request;
 public class CreatePostRequest {
     private String title;
     private String content;
-    private String author;
+    private Long userId;
 
     public CreatePostRequest() {
     }
 
-    public CreatePostRequest(String title, String content, String author) {
+    public CreatePostRequest(String title, String content, Long userId) {
         this.title = title;
         this.content = content;
-        this.author = author;
+        this.userId = userId;
     }
 
     public String getTitle() {
@@ -22,7 +22,5 @@ public class CreatePostRequest {
         return content;
     }
 
-    public String getAuthor() {
-        return author;
-    }
+    public Long getUserId() { return userId; }
 }

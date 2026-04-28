@@ -7,14 +7,12 @@ public class PostResponse {
     private final String title;
     private final String content;
     private final String author;
-    private final String createdAt;
 
     public PostResponse(Post post) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();
-        this.author = post.getAuthor();
-        this.createdAt = post.getCreatedAt();
+        this.author = post.getUser().getNickname();
     }
 
     public Long getId() {
@@ -33,12 +31,8 @@ public class PostResponse {
         return author;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
     @Override
     public String toString() {
-        return "[" + id + "] " + title + " - " + author + " (" + createdAt + ")\n" + content;
+        return "[" + id + "] " + title + "\n" + content;
     }
 }
