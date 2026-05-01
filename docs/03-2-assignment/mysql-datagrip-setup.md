@@ -130,13 +130,15 @@ Database: assignment
 
 Spring Boot 애플리케이션도 DataGrip과 같은 데이터베이스 계정을 사용한다.
 
+`application.yml`은 Git에서 추적되는 파일이므로 실제 DB 비밀번호를 직접 적지 않는다. 비밀번호는 실행 환경변수로 주입한다.
+
 ```yaml
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/assignment
-    username: assignment_jaehun
-    password: 설정한 비밀번호
     driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USERNAME:}
+    password: ${MYSQL_PASSWORD:}
 
   jpa:
     hibernate:
@@ -146,6 +148,45 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
     show-sql: true
+```
+
+## IntelliJ 실행 환경변수 설정
+
+IntelliJ에서 초록색 실행 버튼으로 애플리케이션을 실행할 때도 환경변수를 넣을 수 있다.
+
+설정 경로는 다음과 같다.
+
+```text
+Run/Debug Configurations
+-> Edit Configurations...
+-> Modify options
+-> Environment variables
+```
+
+`Environment variables`에 아래 값을 추가한다.
+
+```text
+MYSQL_USERNAME=assignment_jaehun;MYSQL_PASSWORD=설정한 비밀번호
+```
+
+입력창 오른쪽의 아이콘을 누르면 표 형태로도 추가할 수 있다.
+
+```text
+MYSQL_USERNAME    assignment_jaehun
+MYSQL_PASSWORD    설정한 비밀번호
+```
+
+실행 설정의 JDK 또는 JRE도 Java 17로 맞춘다. 이 프로젝트의 Gradle 8.7은 Java 26으로 실행하면 `Unsupported class file major version 70` 오류가 발생할 수 있다.
+
+## 터미널 실행 환경변수 설정
+
+터미널에서 실행할 때는 아래처럼 환경변수를 먼저 지정한 뒤 실행한다.
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export MYSQL_USERNAME=assignment_jaehun
+export MYSQL_PASSWORD='설정한 비밀번호'
+./gradlew bootRun
 ```
 
 ## 실습 시작 순서
