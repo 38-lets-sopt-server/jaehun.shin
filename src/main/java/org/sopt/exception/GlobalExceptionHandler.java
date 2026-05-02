@@ -1,6 +1,6 @@
 package org.sopt.exception;
 
-import org.sopt.dto.response.ApiResponse;
+import org.sopt.dto.response.BaseResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -9,32 +9,32 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException e) {
+    public ResponseEntity<BaseResponse<Void>> handleUserNotFound(UserNotFoundException e) {
         ErrorCode errorCode = e.getErrorCode();
         return buildErrorResponse(errorCode, errorCode.getMessage());
     }
 
     @ExceptionHandler(PostNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handlePostNotFound(PostNotFoundException e) {
+    public ResponseEntity<BaseResponse<Void>> handlePostNotFound(PostNotFoundException e) {
         ErrorCode errorCode = e.getErrorCode();
         return buildErrorResponse(errorCode, errorCode.getMessage());
     }
 
     @ExceptionHandler(PostValidationException.class)
-    public ResponseEntity<ApiResponse<Void>> handlePostValidation(PostValidationException e) {
+    public ResponseEntity<BaseResponse<Void>> handlePostValidation(PostValidationException e) {
         ErrorCode errorCode = e.getErrorCode();
         return buildErrorResponse(errorCode, errorCode.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException e) {
+    public ResponseEntity<BaseResponse<Void>> handleIllegalArgument(IllegalArgumentException e) {
         ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
         return buildErrorResponse(errorCode, e.getMessage());
     }
 
-    private ResponseEntity<ApiResponse<Void>> buildErrorResponse(ErrorCode errorCode, String message) {
+    private ResponseEntity<BaseResponse<Void>> buildErrorResponse(ErrorCode errorCode, String message) {
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode.getCode(), message));
+                .body(BaseResponse.fail(errorCode.getCode(), message));
     }
 }
