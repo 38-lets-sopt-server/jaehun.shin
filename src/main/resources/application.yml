@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/assignment
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/assignment}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USERNAME:}
     password: ${MYSQL_PASSWORD:}
