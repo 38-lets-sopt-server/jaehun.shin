@@ -1,10 +1,13 @@
 package org.sopt.service;
 
+import org.sopt.domain.AccessTokenBlacklist;
 import org.sopt.domain.RefreshToken;
 import org.sopt.domain.User;
 import org.sopt.dto.request.SignupRequest;
 import org.sopt.dto.response.AuthenticatedMemberResponse;
 import org.sopt.dto.response.TokenResponse;
+import org.sopt.exception.AuthorizationException;
+import org.sopt.repository.AccessTokenBlacklistRepository;
 import org.sopt.repository.RefreshTokenRepository;
 import org.sopt.repository.UserRepository;
 import org.sopt.security.JwtService;
@@ -17,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AccessTokenBlacklistRepository accessTokenBlacklistRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -26,11 +30,13 @@ public class AuthService {
 
     public AuthService(
             RefreshTokenRepository refreshTokenRepository,
+            AccessTokenBlacklistRepository accessTokenBlacklistRepository,
             UserRepository userRepository,
             JwtService jwtService,
             PasswordEncoder passwordEncoder
     ) {
         this.refreshTokenRepository = refreshTokenRepository;
+        this.accessTokenBlacklistRepository = accessTokenBlacklistRepository;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
@@ -83,6 +89,24 @@ public class AuthService {
         savedRefreshToken.rotate(newRefreshToken, refreshTokenExpiresInSeconds);
 
         return TokenResponse.of(newAccessToken, newRefreshToken);
+    }
+
+    @Transactional
+    public void logout(Long memberId, String accessToken) {
+        Long tokenMemberId = jwtService.verifyAndGetMemberId(accessToken);
+        if (!tokenMemberId.equals(memberId)) {
+            throw new AuthorizationException();
+        }
+
+        refreshTokenRepository.deleteByMemberId(memberId);
+
+        if (!accessTokenBlacklistRepository.existsByToken(accessToken)) {
+            accessTokenBlacklistRepository.save(AccessTokenBlacklist.of(
+                    memberId,
+                    accessToken,
+                    jwtService.verifyAndGetExpiresAt(accessToken)
+            ));
+        }
     }
 
     @Transactional(readOnly = true)

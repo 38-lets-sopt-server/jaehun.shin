@@ -3,6 +3,7 @@ package org.sopt.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.sopt.dto.request.SignupRequest;
 import org.sopt.dto.response.AuthenticatedMemberResponse;
@@ -70,14 +71,27 @@ public class AuthController {
         return ResponseEntity.ok(BaseResponse.success("토큰 재발급 성공", tokens));
     }
 
+    @Operation(summary = "로그아웃 (Refresh Token 삭제 + Access Token 블랙리스트)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 필요")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/auth/logout")
+    public ResponseEntity<BaseResponse<Void>> logout(
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
+            Authentication authentication
+    ) {
+        String accessToken = extractBearerToken(authorization);
+        authService.logout(getMemberId(authentication), accessToken);
+        return ResponseEntity.ok(BaseResponse.success("로그아웃 성공", null));
+    }
+
     @Operation(summary = "내 정보 조회 (Access Token 검증)")
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public ResponseEntity<BaseResponse<AuthenticatedMemberResponse>> me(Authentication authentication) {
-        if (authentication == null || authentication.getPrincipal() == null) {
-            throw new IllegalArgumentException("인증되지 않았습니다.");
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+        Long memberId = getMemberId(authentication);
         AuthenticatedMemberResponse member = authService.getMemberById(memberId);
 
         return ResponseEntity.ok(BaseResponse.success("내 정보 조회 성공", member));
@@ -89,5 +103,13 @@ public class AuthController {
         }
 
         return authorization.substring(BEARER_PREFIX.length()).trim();
+    }
+
+    private Long getMemberId(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new IllegalArgumentException("인증되지 않았습니다.");
+        }
+
+        return Long.parseLong(authentication.getName());
     }
 }
