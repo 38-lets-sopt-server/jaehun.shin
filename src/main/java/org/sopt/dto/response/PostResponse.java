@@ -7,12 +7,18 @@ public class PostResponse {
     private final String title;
     private final String content;
     private final String author;
+    private final long likeCount;
 
     public PostResponse(Post post) {
+        this(post, 0);
+    }
+
+    public PostResponse(Post post, long likeCount) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();
         this.author = post.getUser().getNickname();
+        this.likeCount = likeCount;
     }
 
     public Long getId() {
@@ -29,6 +35,10 @@ public class PostResponse {
 
     public String getAuthor() {
         return author;
+    }
+
+    public long getLikeCount() {
+        return likeCount;
     }
 
     @Override

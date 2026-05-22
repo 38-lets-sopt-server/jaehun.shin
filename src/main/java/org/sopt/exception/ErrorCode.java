@@ -10,6 +10,7 @@ public enum ErrorCode {
     POST_CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "POST_004", "내용은 필수입니다."),
     AUTH_REQUIRED(HttpStatus.UNAUTHORIZED, "AUTH_001", "인증이 필요합니다."),
     AUTH_FAILED(HttpStatus.UNAUTHORIZED, "AUTH_002", "아이디 또는 비밀번호가 올바르지 않습니다."),
+    FORBIDDEN(HttpStatus.FORBIDDEN, "AUTH_003", "접근 권한이 없습니다."),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "COMMON_001", "잘못된 요청입니다.");
 
     private final HttpStatus status;
