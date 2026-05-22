@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.sopt.dto.request.SignupRequest;
 import org.sopt.dto.response.AuthenticatedMemberResponse;
 import org.sopt.dto.response.BaseResponse;
 import org.sopt.dto.response.TokenResponse;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +31,19 @@ public class AuthController {
 
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    @Operation(summary = "회원가입 (BCrypt 비밀번호 암호화 저장)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "회원가입 성공"),
+            @ApiResponse(responseCode = "400", description = "회원가입 실패")
+    })
+    @PostMapping("/auth/signup")
+    public ResponseEntity<BaseResponse<AuthenticatedMemberResponse>> signup(
+            @RequestBody SignupRequest request
+    ) {
+        AuthenticatedMemberResponse member = authService.signup(request);
+        return ResponseEntity.ok(BaseResponse.success("회원가입 성공", member));
     }
 
     @Operation(summary = "로그인 (Access Token + Refresh Token 발급)")

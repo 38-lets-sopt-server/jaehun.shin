@@ -2,12 +2,14 @@ package org.sopt.service;
 
 import org.sopt.domain.RefreshToken;
 import org.sopt.domain.User;
+import org.sopt.dto.request.SignupRequest;
 import org.sopt.dto.response.AuthenticatedMemberResponse;
 import org.sopt.dto.response.TokenResponse;
 import org.sopt.repository.RefreshTokenRepository;
 import org.sopt.repository.UserRepository;
 import org.sopt.security.JwtService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.security.jwt.refresh-token-expires-in-seconds:1209600}")
     private long refreshTokenExpiresInSeconds;
@@ -24,11 +27,28 @@ public class AuthService {
     public AuthService(
             RefreshTokenRepository refreshTokenRepository,
             UserRepository userRepository,
-            JwtService jwtService
+            JwtService jwtService,
+            PasswordEncoder passwordEncoder
     ) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Transactional
+    public AuthenticatedMemberResponse signup(SignupRequest request) {
+        validateSignupRequest(request);
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
+
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        User user = new User(request.getNickname(), request.getEmail(), encodedPassword);
+        User savedUser = userRepository.save(user);
+
+        return AuthenticatedMemberResponse.from(savedUser);
     }
 
     @Transactional
@@ -77,10 +97,28 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        if (user.getPassword() == null || !user.getPassword().equals(password)) {
+        if (user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
         return user;
+    }
+
+    private void validateSignupRequest(SignupRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("회원가입 요청이 비어있습니다.");
+        }
+
+        if (request.getNickname() == null || request.getNickname().isBlank()) {
+            throw new IllegalArgumentException("닉네임은 필수입니다.");
+        }
+
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new IllegalArgumentException("이메일은 필수입니다.");
+        }
+
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new IllegalArgumentException("비밀번호는 필수입니다.");
+        }
     }
 }
