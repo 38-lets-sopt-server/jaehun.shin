@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.sopt.dto.request.CreatePostRequest;
 import org.sopt.dto.request.UpdatePostRequest;
@@ -35,8 +36,10 @@ public class PostController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "게시글 생성 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 - 제목 또는 내용이 비어있거나 길이 제한을 초과한 경우"),
+            @ApiResponse(responseCode = "401", description = "인증 필요"),
             @ApiResponse(responseCode = "404", description = "작성자를 찾을 수 없음")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<BaseResponse<CreatePostResponse>> createPost(@RequestBody CreatePostRequest request) {
         CreatePostResponse response = postService.createPost(request);
@@ -86,8 +89,10 @@ public class PostController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 - 제목 또는 내용이 비어있거나 길이 제한을 초과한 경우"),
+            @ApiResponse(responseCode = "401", description = "인증 필요"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse<Void>> updatePost(
             @Parameter(description = "수정할 게시글 ID", example = "1", required = true)
@@ -106,8 +111,10 @@ public class PostController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 필요"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse<Void>> deletePost(
             @Parameter(description = "삭제할 게시글 ID", example = "1", required = true)

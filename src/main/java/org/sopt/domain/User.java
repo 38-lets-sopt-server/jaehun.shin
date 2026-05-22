@@ -13,11 +13,19 @@ public class User extends BaseTimeEntity {
 
     private String email;
 
+    private String password;
+
     protected User(){}
 
     public User(String nickname, String email) {
         this.nickname = nickname;
         this.email = email;
+    }
+
+    public User(String nickname, String email, String password) {
+        this.nickname = nickname;
+        this.email = email;
+        this.password = password;
     }
 
     public Long getId() {
@@ -30,5 +38,9 @@ public class User extends BaseTimeEntity {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
