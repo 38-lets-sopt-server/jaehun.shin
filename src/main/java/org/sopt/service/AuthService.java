@@ -2,13 +2,18 @@ package org.sopt.service;
 
 import org.sopt.domain.AccessTokenBlacklist;
 import org.sopt.domain.RefreshToken;
+import org.sopt.domain.SocialAccount;
+import org.sopt.domain.SocialProvider;
 import org.sopt.domain.User;
+import org.sopt.dto.oauth.OAuthUserInfo;
+import org.sopt.dto.request.OAuthLoginRequest;
 import org.sopt.dto.request.SignupRequest;
 import org.sopt.dto.response.AuthenticatedMemberResponse;
 import org.sopt.dto.response.TokenResponse;
 import org.sopt.exception.AuthorizationException;
 import org.sopt.repository.AccessTokenBlacklistRepository;
 import org.sopt.repository.RefreshTokenRepository;
+import org.sopt.repository.SocialAccountRepository;
 import org.sopt.repository.UserRepository;
 import org.sopt.security.JwtService;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,13 +21,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class AuthService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final AccessTokenBlacklistRepository accessTokenBlacklistRepository;
+    private final SocialAccountRepository socialAccountRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final OAuthUserInfoClient oAuthUserInfoClient;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.security.jwt.refresh-token-expires-in-seconds:1209600}")
@@ -31,14 +40,18 @@ public class AuthService {
     public AuthService(
             RefreshTokenRepository refreshTokenRepository,
             AccessTokenBlacklistRepository accessTokenBlacklistRepository,
+            SocialAccountRepository socialAccountRepository,
             UserRepository userRepository,
             JwtService jwtService,
+            OAuthUserInfoClient oAuthUserInfoClient,
             PasswordEncoder passwordEncoder
     ) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.accessTokenBlacklistRepository = accessTokenBlacklistRepository;
+        this.socialAccountRepository = socialAccountRepository;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.oAuthUserInfoClient = oAuthUserInfoClient;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -60,7 +73,23 @@ public class AuthService {
     @Transactional
     public TokenResponse login(String email, String password) {
         User user = loginWithCredentials(email, password);
+        return issueTokens(user);
+    }
 
+    @Transactional
+    public TokenResponse oauthLogin(SocialProvider provider, OAuthLoginRequest request) {
+        validateOAuthLoginRequest(request);
+
+        OAuthUserInfo userInfo = oAuthUserInfoClient.getUserInfo(provider, request.getAccessToken());
+        User user = socialAccountRepository
+                .findByProviderAndProviderUserId(provider, userInfo.getProviderUserId())
+                .map(SocialAccount::getUser)
+                .orElseGet(() -> connectSocialAccount(provider, userInfo));
+
+        return issueTokens(user);
+    }
+
+    private TokenResponse issueTokens(User user) {
         String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getId());
 
@@ -126,6 +155,28 @@ public class AuthService {
         }
 
         return user;
+    }
+
+    private User connectSocialAccount(SocialProvider provider, OAuthUserInfo userInfo) {
+        User user = findUserByEmail(userInfo.getEmail())
+                .orElseGet(() -> userRepository.save(new User(userInfo.getNickname(), userInfo.getEmail())));
+
+        socialAccountRepository.save(new SocialAccount(provider, userInfo.getProviderUserId(), user));
+        return user;
+    }
+
+    private Optional<User> findUserByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return Optional.empty();
+        }
+
+        return userRepository.findByEmail(email);
+    }
+
+    private void validateOAuthLoginRequest(OAuthLoginRequest request) {
+        if (request == null || request.getAccessToken() == null || request.getAccessToken().isBlank()) {
+            throw new IllegalArgumentException("소셜 로그인 Access Token은 필수입니다.");
+        }
     }
 
     private void validateSignupRequest(SignupRequest request) {

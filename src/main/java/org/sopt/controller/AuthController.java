@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.sopt.domain.SocialProvider;
+import org.sopt.dto.request.OAuthLoginRequest;
 import org.sopt.dto.request.SignupRequest;
 import org.sopt.dto.response.AuthenticatedMemberResponse;
 import org.sopt.dto.response.BaseResponse;
@@ -59,6 +61,32 @@ public class AuthController {
     ) {
         TokenResponse tokens = authService.login(email, password);
         return ResponseEntity.ok(BaseResponse.success("로그인 성공", tokens));
+    }
+
+    @Operation(summary = "Kakao 소셜 로그인")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Kakao 소셜 로그인 성공"),
+            @ApiResponse(responseCode = "400", description = "Kakao 소셜 로그인 실패")
+    })
+    @PostMapping("/auth/oauth/kakao")
+    public ResponseEntity<BaseResponse<TokenResponse>> kakaoLogin(
+            @RequestBody OAuthLoginRequest request
+    ) {
+        TokenResponse tokens = authService.oauthLogin(SocialProvider.KAKAO, request);
+        return ResponseEntity.ok(BaseResponse.success("Kakao 소셜 로그인 성공", tokens));
+    }
+
+    @Operation(summary = "Google 소셜 로그인")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Google 소셜 로그인 성공"),
+            @ApiResponse(responseCode = "400", description = "Google 소셜 로그인 실패")
+    })
+    @PostMapping("/auth/oauth/google")
+    public ResponseEntity<BaseResponse<TokenResponse>> googleLogin(
+            @RequestBody OAuthLoginRequest request
+    ) {
+        TokenResponse tokens = authService.oauthLogin(SocialProvider.GOOGLE, request);
+        return ResponseEntity.ok(BaseResponse.success("Google 소셜 로그인 성공", tokens));
     }
 
     @Operation(summary = "토큰 재발급")
