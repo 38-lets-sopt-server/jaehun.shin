@@ -97,7 +97,8 @@ public class PostService {
                 .orElseThrow(() -> new PostNotFoundException(id));
         validateOwner(post, memberId);
 
-        postRepository.deleteById(id);
+        postLikeRepository.deleteByPostId(id);
+        postRepository.delete(post);
     }
 
     @Transactional
