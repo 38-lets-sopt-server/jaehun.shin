@@ -11,6 +11,8 @@ import org.sopt.dto.request.SignupRequest;
 import org.sopt.dto.response.AuthenticatedMemberResponse;
 import org.sopt.dto.response.BaseResponse;
 import org.sopt.dto.response.TokenResponse;
+import org.sopt.exception.AuthException;
+import org.sopt.exception.ErrorCode;
 import org.sopt.service.AuthService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -127,7 +129,7 @@ public class AuthController {
 
     private String extractBearerToken(String authorization) {
         if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
-            throw new IllegalArgumentException("Bearer 토큰이 아닙니다.");
+            throw new AuthException(ErrorCode.AUTH_REQUIRED, "Bearer 토큰이 아닙니다.");
         }
 
         return authorization.substring(BEARER_PREFIX.length()).trim();
@@ -135,7 +137,7 @@ public class AuthController {
 
     private Long getMemberId(Authentication authentication) {
         if (authentication == null || authentication.getName() == null) {
-            throw new IllegalArgumentException("인증되지 않았습니다.");
+            throw new AuthException(ErrorCode.AUTH_REQUIRED);
         }
 
         return Long.parseLong(authentication.getName());

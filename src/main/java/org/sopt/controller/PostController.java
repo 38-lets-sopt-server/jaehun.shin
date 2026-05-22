@@ -14,6 +14,8 @@ import org.sopt.dto.response.BaseResponse;
 import org.sopt.dto.response.CreatePostResponse;
 import org.sopt.dto.response.PostLikeResponse;
 import org.sopt.dto.response.PostResponse;
+import org.sopt.exception.AuthException;
+import org.sopt.exception.ErrorCode;
 import org.sopt.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -179,7 +181,7 @@ public class PostController {
 
     private Long getMemberId(Authentication authentication) {
         if (authentication == null || authentication.getName() == null) {
-            throw new IllegalArgumentException("인증되지 않았습니다.");
+            throw new AuthException(ErrorCode.AUTH_REQUIRED);
         }
 
         return Long.parseLong(authentication.getName());

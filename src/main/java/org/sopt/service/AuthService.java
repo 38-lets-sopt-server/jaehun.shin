@@ -1,5 +1,6 @@
 package org.sopt.service;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.sopt.domain.AccessTokenBlacklist;
 import org.sopt.domain.RefreshToken;
 import org.sopt.domain.SocialAccount;
@@ -10,7 +11,9 @@ import org.sopt.dto.request.OAuthLoginRequest;
 import org.sopt.dto.request.SignupRequest;
 import org.sopt.dto.response.AuthenticatedMemberResponse;
 import org.sopt.dto.response.TokenResponse;
+import org.sopt.exception.AuthException;
 import org.sopt.exception.AuthorizationException;
+import org.sopt.exception.ErrorCode;
 import org.sopt.repository.AccessTokenBlacklistRepository;
 import org.sopt.repository.RefreshTokenRepository;
 import org.sopt.repository.SocialAccountRepository;
@@ -101,12 +104,12 @@ public class AuthService {
 
     @Transactional
     public TokenResponse reissue(String refreshToken) {
-        Long memberId = jwtService.verifyAndGetMemberId(refreshToken);
+        Long memberId = verifyRefreshToken(refreshToken);
         RefreshToken savedRefreshToken = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new IllegalArgumentException("Refresh Token을 찾을 수 없습니다."));
+                .orElseThrow(() -> new AuthException(ErrorCode.AUTH_FAILED, "Refresh Token을 찾을 수 없습니다."));
 
         if (savedRefreshToken.isExpired()) {
-            throw new IllegalArgumentException("Refresh Token이 만료되었습니다.");
+            throw new AuthException(ErrorCode.AUTH_FAILED, "Refresh Token이 만료되었습니다.");
         }
 
         User user = userRepository.findById(memberId)
@@ -148,13 +151,21 @@ public class AuthService {
 
     private User loginWithCredentials(String email, String password) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new AuthException(ErrorCode.AUTH_FAILED, "이메일 또는 비밀번호가 올바르지 않습니다."));
 
         if (user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
+            throw new AuthException(ErrorCode.AUTH_FAILED, "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
         return user;
+    }
+
+    private Long verifyRefreshToken(String refreshToken) {
+        try {
+            return jwtService.verifyAndGetMemberId(refreshToken);
+        } catch (JWTVerificationException | IllegalArgumentException e) {
+            throw new AuthException(ErrorCode.AUTH_FAILED, "Refresh Token이 유효하지 않습니다.");
+        }
     }
 
     private User connectSocialAccount(SocialProvider provider, OAuthUserInfo userInfo) {
