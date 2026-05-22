@@ -8,6 +8,8 @@ public enum ErrorCode {
     POST_TITLE_REQUIRED(HttpStatus.BAD_REQUEST, "POST_002", "제목은 필수입니다."),
     POST_TITLE_TOO_LONG(HttpStatus.BAD_REQUEST, "POST_003", "제목은 50자 이내로 작성해주세요."),
     POST_CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "POST_004", "내용은 필수입니다."),
+    AUTH_REQUIRED(HttpStatus.UNAUTHORIZED, "AUTH_001", "인증이 필요합니다."),
+    AUTH_FAILED(HttpStatus.UNAUTHORIZED, "AUTH_002", "아이디 또는 비밀번호가 올바르지 않습니다."),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "COMMON_001", "잘못된 요청입니다.");
 
     private final HttpStatus status;
