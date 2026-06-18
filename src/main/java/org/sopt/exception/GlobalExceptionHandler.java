@@ -26,6 +26,18 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(errorCode, errorCode.getMessage());
     }
 
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<BaseResponse<Void>> handleAuth(AuthException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return buildErrorResponse(errorCode, e.getMessage());
+    }
+
+    @ExceptionHandler(AuthorizationException.class)
+    public ResponseEntity<BaseResponse<Void>> handleAuthorization(AuthorizationException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return buildErrorResponse(errorCode, errorCode.getMessage());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<BaseResponse<Void>> handleIllegalArgument(IllegalArgumentException e) {
         ErrorCode errorCode = ErrorCode.INVALID_REQUEST;

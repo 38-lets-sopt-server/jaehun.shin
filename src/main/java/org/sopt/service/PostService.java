@@ -8,9 +8,13 @@ import org.sopt.domain.User;
 import org.sopt.dto.request.CreatePostRequest;
 import org.sopt.dto.request.UpdatePostRequest;
 import org.sopt.dto.response.CreatePostResponse;
+import org.sopt.dto.response.PostLikeResponse;
 import org.sopt.dto.response.PostResponse;
+import org.sopt.exception.AuthorizationException;
 import org.sopt.exception.PostNotFoundException;
 import org.sopt.exception.UserNotFoundException;
+import org.sopt.domain.PostLike;
+import org.sopt.repository.PostLikeRepository;
 import org.sopt.repository.PostRepository;
 import org.sopt.repository.UserRepository;
 import org.sopt.validator.PostValidator;
@@ -21,20 +25,26 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostLikeRepository postLikeRepository;
     private final PostValidator postValidator = new PostValidator();
 
-    public PostService(PostRepository postRepository, UserRepository userRepository) {
+    public PostService(
+            PostRepository postRepository,
+            UserRepository userRepository,
+            PostLikeRepository postLikeRepository
+    ) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.postLikeRepository = postLikeRepository;
     }
 
     // CREATE
     @Transactional
-    public CreatePostResponse createPost(CreatePostRequest request) {
+    public CreatePostResponse createPost(CreatePostRequest request, Long memberId) {
 
         postValidator.validateCreate(request);
 
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(memberId)
                 .orElseThrow(UserNotFoundException::new);
 
         Post post = new Post(
@@ -54,7 +64,7 @@ public class PostService {
         List<PostResponse> responses = new ArrayList<>();
 
         for (Post post : posts) {
-            responses.add(new PostResponse(post));
+            responses.add(new PostResponse(post, postLikeRepository.countByPostId(post.getId())));
         }
 
         return responses;
@@ -66,14 +76,15 @@ public class PostService {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException(id));
 
-        return new PostResponse(post);
+        return new PostResponse(post, postLikeRepository.countByPostId(post.getId()));
     }
 
     // UPDATE 📝 과제
     @Transactional
-    public void updatePost(Long id, UpdatePostRequest request) {
+    public void updatePost(Long id, UpdatePostRequest request, Long memberId) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException(id));
+        validateOwner(post, memberId);
 
         postValidator.validateUpdate(request);
         post.update(request.getTitle(), request.getContent());
@@ -81,10 +92,44 @@ public class PostService {
 
     // DELETE 📝 과제
     @Transactional
-    public void deletePost(Long id) {
-        postRepository.findById(id)
+    public void deletePost(Long id, Long memberId) {
+        Post post = postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException(id));
+        validateOwner(post, memberId);
 
-        postRepository.deleteById(id);
+        postLikeRepository.deleteByPostId(id);
+        postRepository.delete(post);
+    }
+
+    @Transactional
+    public PostLikeResponse likePost(Long postId, Long memberId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException(postId));
+        User user = userRepository.findById(memberId)
+                .orElseThrow(UserNotFoundException::new);
+
+        if (!postLikeRepository.existsByPostIdAndUserId(postId, memberId)) {
+            postLikeRepository.save(new PostLike(post, user));
+        }
+
+        return new PostLikeResponse(postId, postLikeRepository.countByPostId(postId), true);
+    }
+
+    @Transactional
+    public PostLikeResponse unlikePost(Long postId, Long memberId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException(postId));
+
+        if (postLikeRepository.existsByPostIdAndUserId(postId, memberId)) {
+            postLikeRepository.deleteByPostIdAndUserId(postId, memberId);
+        }
+
+        return new PostLikeResponse(post.getId(), postLikeRepository.countByPostId(postId), false);
+    }
+
+    private void validateOwner(Post post, Long memberId) {
+        if (!post.getUser().getId().equals(memberId)) {
+            throw new AuthorizationException();
+        }
     }
 }

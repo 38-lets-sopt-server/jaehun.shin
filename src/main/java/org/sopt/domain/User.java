@@ -9,10 +9,13 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nickname;
 
+    @Column(unique = true)
     private String email;
 
+    @Column(length = 100)
     private String password;
 
     protected User(){}

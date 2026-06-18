@@ -23,3 +23,8 @@ app:
       secret: ${JWT_SECRET:assignment-security-practice-jwt-secret-key-2026}
       access-token-expires-in-seconds: ${JWT_ACCESS_TOKEN_EXPIRES_IN_SECONDS:1800}
       refresh-token-expires-in-seconds: ${JWT_REFRESH_TOKEN_EXPIRES_IN_SECONDS:1209600}
+  oauth:
+    kakao:
+      user-info-uri: ${KAKAO_USER_INFO_URI:https://kapi.kakao.com/v2/user/me}
+    google:
+      user-info-uri: ${GOOGLE_USER_INFO_URI:https://www.googleapis.com/oauth2/v3/userinfo}
